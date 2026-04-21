@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useUserProgress } from '../context/UserProgressContext';
 import NutritionSystem from '../components/NutritionSystem';
-import AINutritionCoach from '../components/AINutritionCoach';
 import { CheckCircle2, Utensils, X } from 'lucide-react';
 
 const STANDARD_CATEGORIES = ['Breakfast', 'Lunch', 'Dinner'];
@@ -14,26 +13,7 @@ export default function Nutrition() {
   const [manualCategory, setManualCategory] = useState('Breakfast');
   const [manualCustomType, setManualCustomType] = useState('');
 
-  // States for the Meal Category Prompt Modal (for AI additions)
-  const [pendingMeal, setPendingMeal] = useState(null);
-  const [promptCategory, setPromptCategory] = useState('Breakfast');
-  const [promptCustomType, setPromptCustomType] = useState('');
 
-  // Initiate adding a meal from AI Coach
-  const handleInitiateAdd = (meal) => {
-    setPendingMeal(meal);
-    setPromptCategory('Breakfast');
-    setPromptCustomType('');
-  };
-
-  // Confirm adding the pending meal with its category
-  const confirmAddMeal = () => {
-    if (!pendingMeal) return;
-    const finalType = promptCategory === 'Custom' ? (promptCustomType || 'Other') : promptCategory;
-    
-    setDailyMeals([...dailyMeals, { ...pendingMeal, mealType: finalType, logId: Date.now() }]);
-    setPendingMeal(null);
-  };
 
   // Submit the manual entry form
   const handleManualSubmit = (e) => {
@@ -126,9 +106,6 @@ export default function Nutrition() {
           </div>
         </div>
         
-        {/* AI Nutrition Coach */}
-        <AINutritionCoach onAddMeal={handleInitiateAdd} />
-
       </div>
 
       {/* Right Column: Meal Logging */}
@@ -262,62 +239,6 @@ export default function Nutrition() {
 
       </div>
 
-      {/* Category Prompt Modal */}
-      {pendingMeal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-[#1e1e1e] border border-gray-800 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden flex flex-col">
-            <div className="p-5 border-b border-gray-800 flex justify-between items-center bg-[#222]">
-              <h2 className="text-lg font-bold text-white">Select Category</h2>
-              <button onClick={() => setPendingMeal(null)} className="text-gray-400 hover:text-white">
-                <X size={20} />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-4">
-              <div className="text-sm text-gray-400 mb-2">
-                What type of meal is <strong className="text-white">{pendingMeal.name}</strong>?
-              </div>
-
-              <select 
-                value={promptCategory}
-                onChange={(e) => setPromptCategory(e.target.value)}
-                className="w-full bg-[#252525] border border-gray-700 text-white text-sm rounded-lg p-3 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="Breakfast">Breakfast</option>
-                <option value="Lunch">Lunch</option>
-                <option value="Dinner">Dinner</option>
-                <option value="Custom">Custom (Snack, Brunch, etc.)</option>
-              </select>
-
-              {promptCategory === 'Custom' && (
-                <input
-                  type="text"
-                  placeholder="E.g., Post-workout"
-                  required
-                  value={promptCustomType}
-                  onChange={(e) => setPromptCustomType(e.target.value)}
-                  className="w-full bg-[#252525] border border-gray-700 text-white text-sm rounded-lg p-3 focus:ring-blue-500 focus:border-blue-500"
-                />
-              )}
-            </div>
-
-            <div className="p-5 border-t border-gray-800 bg-[#222] flex justify-end gap-3">
-              <button 
-                onClick={() => setPendingMeal(null)}
-                className="px-4 py-2 rounded-lg font-medium text-sm text-gray-400 hover:text-white hover:bg-[#333] transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={confirmAddMeal}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
-              >
-                Confirm Add
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

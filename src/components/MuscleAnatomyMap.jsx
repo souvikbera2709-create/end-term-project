@@ -4,12 +4,14 @@ import { RotateCcw, ZoomIn } from 'lucide-react';
 
 const OFF = 'off';
 const PRIMARY = 'primary';
-const CYCLE = { [OFF]: PRIMARY, [PRIMARY]: OFF };
+const SECONDARY = 'secondary';
+const CYCLE = { [OFF]: PRIMARY, [PRIMARY]: SECONDARY, [SECONDARY]: OFF };
 
 const COLORS = {
   base: 'rgba(60, 65, 74, 0.5)',
   stroke: 'rgba(160, 169, 189, 0.34)',
   primary: '#A020F0',
+  secondary: '#06b6d4',
 };
 
 const FRONT_REGIONS = [
@@ -107,6 +109,7 @@ function buildPayload(stateMap) {
 
 function getStateColor(state) {
   if (state === PRIMARY) return COLORS.primary;
+  if (state === SECONDARY) return COLORS.secondary;
   return COLORS.base;
 }
 
@@ -169,6 +172,12 @@ function SvgAnatomy({
             <stop offset="56%" stopColor="#c15fff" stopOpacity="0.55" />
             <stop offset="100%" stopColor="#a020f0" stopOpacity="0" />
           </radialGradient>
+          <radialGradient id="muscleHotspotSecondary" cx="50%" cy="50%" r="55%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+            <stop offset="22%" stopColor="#cffafe" stopOpacity="0.85" />
+            <stop offset="56%" stopColor="#06b6d4" stopOpacity="0.55" />
+            <stop offset="100%" stopColor="#0891b2" stopOpacity="0" />
+          </radialGradient>
           <filter id="muscleGlowPrimary" x="-80%" y="-80%" width="260%" height="260%">
             <feGaussianBlur stdDeviation="5.5" result="coloredBlur" />
             <feMerge>
@@ -204,14 +213,18 @@ function SvgAnatomy({
         {allRegions.map((region) => {
           const state = value[region.muscle] ?? OFF;
           const fill = getStateColor(state);
-          const glowFilter = state === PRIMARY ? 'url(#muscleGlowPrimary)' : 'none';
-          const glowOpacity = state === PRIMARY ? 0.95 : 0.62;
+          const glowFilter = state === PRIMARY
+            ? 'url(#muscleGlowPrimary)'
+            : state === SECONDARY
+              ? 'url(#muscleGlowSecondary)'
+              : 'none';
+          const glowOpacity = state !== OFF ? 0.95 : 0.62;
           return (
             <g key={region.id}>
-              {state === PRIMARY && (
+              {(state === PRIMARY || state === SECONDARY) && (
                 <path
                   d={region.d}
-                  fill='url(#muscleHotspot)'
+                  fill={state === PRIMARY ? 'url(#muscleHotspot)' : 'url(#muscleHotspotSecondary)'}
                   opacity={0.95}
                   filter={glowFilter}
                   style={{ mixBlendMode: 'screen' }}

@@ -4,8 +4,17 @@ import { useExercises } from '../context/ExerciseContext';
 import { Calendar, Plus, X, Edit2, Dumbbell } from 'lucide-react';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const SPLITS = ['Push', 'Pull', 'Legs', 'Core', 'Upper Body', 'Lower Body', 'Full Body', 'Cardio', 'Active Recovery', 'Rest'];
-const MUSCLE_GROUPS = ['Chest', 'Back', 'Legs', 'Shoulders', 'Biceps', 'Triceps', 'Forearms', 'Core', 'Cardio'];
+const SPLITS = ['Push', 'Pull', 'Legs', 'Core', 'Upper Body', 'Lower Body', 'Full Body', 'Cardio', 'Active Recovery', 'Rest', 'Custom'];
+const MUSCLE_GROUPS = ['Chest', 'Back', 'Legs', 'Glutes', 'Shoulders', 'Biceps', 'Triceps', 'Forearms', 'Core', 'Hamstrings', 'Quadriceps', 'Calves', 'Cardio'];
+
+// Build the display label for a custom split
+function buildCustomLabel(muscles) {
+  if (!muscles || muscles.length === 0) return 'Custom';
+  return muscles.join(' · ');
+}
+
+// Detect if a split string is a custom one
+function isCustomSplit(s) { return s === 'Custom' || (typeof s === 'string' && s.includes(' · ')); }
 
 export default function Planner() {
   const { weeklyPlan, setWeeklyPlan } = useUserProgress();
@@ -15,10 +24,23 @@ export default function Planner() {
   // Local state for the day currently being edited
   const [editForm, setEditForm] = useState({ split: '', muscles: [], workouts: [] });
   const [newWorkout, setNewWorkout] = useState('');
+  // Muscles selected when building a custom split
+  const [customMuscles, setCustomMuscles] = useState([]);
+  const [showCustomPicker, setShowCustomPicker] = useState(false);
 
   const openEditModal = (day) => {
     setEditingDay(day);
-    setEditForm({ ...weeklyPlan[day] });
+    const plan = weeklyPlan[day];
+    setEditForm({ ...plan });
+    // Restore custom muscles if a custom split already exists
+    const existingCustom = (Array.isArray(plan.split) ? plan.split : [plan.split]).find(s => s && s.includes(' · '));
+    if (existingCustom) {
+      setCustomMuscles(existingCustom.split(' · '));
+      setShowCustomPicker(true);
+    } else {
+      setCustomMuscles([]);
+      setShowCustomPicker(false);
+    }
   };
 
   const saveEdit = () => {
@@ -70,7 +92,7 @@ export default function Planner() {
           const plan = weeklyPlan[day];
           const planSplits = Array.isArray(plan.split) ? plan.split : (plan.split ? [plan.split] : []);
           const isRestDay = planSplits.includes('Rest');
-          const hasSplit = planSplits.length > 0;
+          const hasSplit = planSplits.length > 0 && planSplits.some(s => s && s.trim() !== '');
 
           return (
             <div key={day} className="bg-[#1e1e1e] rounded-2xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-800/50 flex flex-col h-full hover:border-gray-600 transition-colors">
@@ -160,34 +182,53 @@ export default function Planner() {
               
               {/* Split Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">Workout Split (Select multiple)</label>
+                <label className="block text-sm font-medium text-gray-400 mb-2">Workout Split <span className="text-gray-600">(select multiple)</span></label>
                 <div className="flex flex-wrap gap-2">
                   {SPLITS.map(s => {
                     const currentSplits = Array.isArray(editForm.split) ? editForm.split : (editForm.split ? [editForm.split] : []);
-                    const isSelected = currentSplits.includes(s);
+                    // 'Custom' pill is active if showCustomPicker is on
+                    const isSelected = s === 'Custom' ? showCustomPicker : currentSplits.includes(s);
                     return (
                       <button
                         key={s}
                         onClick={() => {
+                          if (s === 'Custom') {
+                            setShowCustomPicker(p => {
+                              if (p) {
+                                // Deselecting custom — remove any existing custom split label
+                                setCustomMuscles([]);
+                                setEditForm(prev => ({
+                                  ...prev,
+                                  split: (Array.isArray(prev.split) ? prev.split : [prev.split])
+                                    .filter(x => x && !isCustomSplit(x))
+                                }));
+                              }
+                              return !p;
+                            });
+                            return;
+                          }
                           setEditForm(prev => {
                             const prevSplits = Array.isArray(prev.split) ? prev.split : (prev.split ? [prev.split] : []);
                             let newSplits;
                             if (s === 'Rest') {
+                              // Rest clears everything including custom
+                              setShowCustomPicker(false);
+                              setCustomMuscles([]);
                               newSplits = isSelected ? [] : ['Rest'];
                             } else {
                               const withoutRest = prevSplits.filter(split => split !== 'Rest');
-                              if (isSelected) {
-                                newSplits = withoutRest.filter(split => split !== s);
-                              } else {
-                                newSplits = [...withoutRest, s];
-                              }
+                              newSplits = isSelected
+                                ? withoutRest.filter(split => split !== s)
+                                : [...withoutRest, s];
                             }
                             return { ...prev, split: newSplits };
                           });
                         }}
                         className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                          isSelected 
-                            ? (s === 'Rest' ? 'bg-green-600 text-white' : 'bg-blue-600 text-white') 
+                          isSelected
+                            ? s === 'Rest' ? 'bg-green-600 text-white'
+                              : s === 'Custom' ? 'bg-purple-600 text-white'
+                              : 'bg-blue-600 text-white'
                             : 'bg-[#252525] text-gray-400 border border-gray-700 hover:border-gray-500'
                         }`}
                       >
@@ -196,6 +237,58 @@ export default function Planner() {
                     );
                   })}
                 </div>
+
+                {/* ── Custom Muscle Picker ── */}
+                {showCustomPicker && (
+                  <div className="mt-4 rounded-xl border border-purple-500/30 bg-purple-950/20 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-purple-300">Build Custom Split</p>
+                      {customMuscles.length > 0 && (
+                        <span className="text-xs text-purple-400 font-mono bg-purple-900/40 px-2 py-0.5 rounded-full">
+                          {buildCustomLabel(customMuscles)}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500">Select all muscle groups for this session:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {MUSCLE_GROUPS.map(mg => {
+                        const on = customMuscles.includes(mg);
+                        return (
+                          <button
+                            key={mg}
+                            type="button"
+                            onClick={() => {
+                              setCustomMuscles(prev => {
+                                const next = on ? prev.filter(m => m !== mg) : [...prev, mg];
+                                // Sync custom label into split array
+                                const label = buildCustomLabel(next);
+                                setEditForm(ef => ({
+                                  ...ef,
+                                  split: [
+                                    ...(Array.isArray(ef.split) ? ef.split : [ef.split])
+                                      .filter(x => x && !isCustomSplit(x) && x !== 'Rest'),
+                                    ...(next.length > 0 ? [label] : [])
+                                  ]
+                                }));
+                                return next;
+                              });
+                            }}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                              on
+                                ? 'bg-purple-600 text-white shadow-[0_0_8px_rgba(168,85,247,0.5)]'
+                                : 'bg-[#1e1830] text-gray-400 border border-purple-800/40 hover:border-purple-500/60 hover:text-purple-300'
+                            }`}
+                          >
+                            {mg}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {customMuscles.length === 0 && (
+                      <p className="text-xs text-amber-500/70 italic">Select at least one muscle group above.</p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {(() => {

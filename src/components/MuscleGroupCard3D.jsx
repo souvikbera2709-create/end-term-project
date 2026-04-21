@@ -152,44 +152,90 @@ const muscleGroupSVGs = {
     <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
       <defs>
         <radialGradient id="legs-bg" cx="50%" cy="30%" r="50%">
-          <stop offset="0%" stopColor="#1e1535" />
+          <stop offset="0%" stopColor="#2d1b4e" />
           <stop offset="100%" stopColor="#0a0812" />
         </radialGradient>
-        <radialGradient id="quad-l" cx="30%" cy="45%" r="60%">
-          <stop offset="0%" stopColor="#c084fc" stopOpacity="0.9" />
-          <stop offset="70%" stopColor="#7c3aed" stopOpacity="0.55" />
+        <radialGradient id="quad-l" cx="35%" cy="40%" r="62%">
+          <stop offset="0%" stopColor="#c084fc" stopOpacity="0.95" />
+          <stop offset="55%" stopColor="#7c3aed" stopOpacity="0.65" />
           <stop offset="100%" stopColor="#4c1d95" stopOpacity="0.1" />
         </radialGradient>
-        <radialGradient id="quad-r" cx="70%" cy="45%" r="60%">
-          <stop offset="0%" stopColor="#c084fc" stopOpacity="0.9" />
-          <stop offset="70%" stopColor="#7c3aed" stopOpacity="0.55" />
+        <radialGradient id="quad-r" cx="65%" cy="40%" r="62%">
+          <stop offset="0%" stopColor="#c084fc" stopOpacity="0.95" />
+          <stop offset="55%" stopColor="#7c3aed" stopOpacity="0.65" />
           <stop offset="100%" stopColor="#4c1d95" stopOpacity="0.1" />
         </radialGradient>
-        <filter id="legs-glow"><feGaussianBlur stdDeviation="3" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>
+        <radialGradient id="calf-grad-l" cx="35%" cy="35%" r="65%">
+          <stop offset="0%" stopColor="#a855f7" stopOpacity="0.75" />
+          <stop offset="65%" stopColor="#6d28d9" stopOpacity="0.4" />
+          <stop offset="100%" stopColor="#3b0764" stopOpacity="0.05" />
+        </radialGradient>
+        <radialGradient id="calf-grad-r" cx="65%" cy="35%" r="65%">
+          <stop offset="0%" stopColor="#a855f7" stopOpacity="0.75" />
+          <stop offset="65%" stopColor="#6d28d9" stopOpacity="0.4" />
+          <stop offset="100%" stopColor="#3b0764" stopOpacity="0.05" />
+        </radialGradient>
+        <filter id="legs-glow">
+          <feGaussianBlur stdDeviation="3.5" result="b"/>
+          <feComposite in="SourceGraphic" in2="b" operator="over"/>
+        </filter>
+        <filter id="legs-glow-sm">
+          <feGaussianBlur stdDeviation="2" result="b"/>
+          <feComposite in="SourceGraphic" in2="b" operator="over"/>
+        </filter>
       </defs>
-      {/* Pelvis/hip area */}
-      <ellipse cx="100" cy="60" rx="45" ry="28" fill="url(#legs-bg)" />
-      {/* Left quad */}
-      <path d="M58 55 Q82 50 95 58 Q98 105 82 128 Q62 120 55 88 Z" fill="url(#quad-l)" filter="url(#legs-glow)" />
-      {/* Right quad */}
-      <path d="M142 55 Q118 50 105 58 Q102 105 118 128 Q138 120 145 88 Z" fill="url(#quad-r)" filter="url(#legs-glow)" />
-      {/* Left knee */}
-      <ellipse cx="80" cy="135" rx="16" ry="12" fill="#1e1535" stroke="#5b21b6" strokeWidth="0.8" />
-      {/* Right knee */}
-      <ellipse cx="120" cy="135" rx="16" ry="12" fill="#1e1535" stroke="#5b21b6" strokeWidth="0.8" />
-      {/* Left calf */}
-      <path d="M68 145 Q80 140 92 145 Q90 178 80 182 Q68 178 68 145Z" fill="#1e1535" stroke="#5b21b6" strokeWidth="0.5" />
-      {/* Right calf */}
-      <path d="M108 145 Q120 140 132 145 Q132 178 120 182 Q108 178 108 145Z" fill="#1e1535" stroke="#5b21b6" strokeWidth="0.5" />
-      {/* Quad separation lines */}
-      <path d="M72 68 Q80 85 78 110" stroke="#e9d5ff" strokeWidth="1" strokeOpacity="0.3" fill="none" />
-      <path d="M128 68 Q120 85 122 110" stroke="#e9d5ff" strokeWidth="1" strokeOpacity="0.3" fill="none" />
-      {/* Highlight spots */}
-      <ellipse cx="74" cy="80" rx="10" ry="14" fill="#a855f7" fillOpacity="0.25" />
-      <ellipse cx="126" cy="80" rx="10" ry="14" fill="#a855f7" fillOpacity="0.25" />
-      {/* Hamstring hint (back) */}
-      <path d="M62 70 Q80 68 94 75" stroke="#7c3aed" strokeWidth="1.5" fill="none" strokeOpacity="0.5" />
-      <path d="M138 70 Q120 68 106 75" stroke="#7c3aed" strokeWidth="1.5" fill="none" strokeOpacity="0.5" />
+      {/* Pelvis / hip base */}
+      <ellipse cx="100" cy="55" rx="48" ry="26" fill="url(#legs-bg)" stroke="#3d1f6b" strokeWidth="0.6" />
+      <path d="M62 55 Q100 47 138 55 Q134 68 100 70 Q66 68 62 55Z" fill="#1e1040" stroke="#5b21b6" strokeWidth="0.5" />
+      {/* === LEFT LEG === */}
+      {/* Outer quad sweep */}
+      <path d="M58 58 Q44 66 42 92 Q44 116 57 130 Q66 122 68 106 Q70 84 65 64 Z"
+            fill="url(#quad-l)" filter="url(#legs-glow)" />
+      {/* Inner quad sweep (rectus femoris) */}
+      <path d="M65 61 Q80 58 90 66 Q92 91 82 112 Q72 120 64 112 Q61 90 65 61 Z"
+            fill="#7c3aed" fillOpacity="0.58" />
+      {/* VMO teardrop */}
+      <ellipse cx="68" cy="120" rx="8" ry="11" fill="#c084fc" fillOpacity="0.55"
+               filter="url(#legs-glow-sm)" />
+      {/* Kneecap */}
+      <ellipse cx="68" cy="133" rx="14" ry="10" fill="#1e1535" stroke="#5b21b6" strokeWidth="1" />
+      <ellipse cx="68" cy="131" rx="8" ry="6" fill="#2d1b4e" stroke="#7c3aed" strokeWidth="0.6" />
+      {/* Calf bulk */}
+      <path d="M55 141 Q68 136 81 141 Q83 163 76 173 Q68 179 61 173 Q54 163 55 141Z"
+            fill="url(#calf-grad-l)" filter="url(#legs-glow-sm)" />
+      {/* Calf medial head */}
+      <path d="M68 141 Q79 138 81 141 Q81 159 76 169 Q71 161 68 141Z"
+            fill="#7c3aed" fillOpacity="0.42" />
+      {/* === RIGHT LEG === */}
+      {/* Outer quad sweep */}
+      <path d="M142 58 Q156 66 158 92 Q156 116 143 130 Q134 122 132 106 Q130 84 135 64 Z"
+            fill="url(#quad-r)" filter="url(#legs-glow)" />
+      {/* Inner quad sweep */}
+      <path d="M135 61 Q120 58 110 66 Q108 91 118 112 Q128 120 136 112 Q139 90 135 61 Z"
+            fill="#7c3aed" fillOpacity="0.58" />
+      {/* VMO teardrop */}
+      <ellipse cx="132" cy="120" rx="8" ry="11" fill="#c084fc" fillOpacity="0.55"
+               filter="url(#legs-glow-sm)" />
+      {/* Kneecap */}
+      <ellipse cx="132" cy="133" rx="14" ry="10" fill="#1e1535" stroke="#5b21b6" strokeWidth="1" />
+      <ellipse cx="132" cy="131" rx="8" ry="6" fill="#2d1b4e" stroke="#7c3aed" strokeWidth="0.6" />
+      {/* Calf bulk */}
+      <path d="M119 141 Q132 136 145 141 Q146 163 139 173 Q132 179 125 173 Q118 163 119 141Z"
+            fill="url(#calf-grad-r)" filter="url(#legs-glow-sm)" />
+      {/* Calf medial head */}
+      <path d="M132 141 Q121 138 119 141 Q119 159 124 169 Q129 161 132 141Z"
+            fill="#7c3aed" fillOpacity="0.42" />
+      {/* Glow hotspots on quad peaks */}
+      <ellipse cx="54" cy="81" rx="10" ry="15" fill="#a855f7" fillOpacity="0.30" />
+      <ellipse cx="146" cy="81" rx="10" ry="15" fill="#a855f7" fillOpacity="0.30" />
+      {/* Highlight sheen streaks */}
+      <path d="M48 68 Q59 63 63 80" stroke="#e9d5ff" strokeWidth="1.3" strokeOpacity="0.45"
+            fill="none" strokeLinecap="round" />
+      <path d="M152 68 Q141 63 137 80" stroke="#e9d5ff" strokeWidth="1.3" strokeOpacity="0.45"
+            fill="none" strokeLinecap="round" />
+      {/* Inter-head separation lines */}
+      <path d="M63 67 Q67 90 65 114" stroke="#e9d5ff" strokeWidth="0.9" strokeOpacity="0.28" fill="none" />
+      <path d="M137 67 Q133 90 135 114" stroke="#e9d5ff" strokeWidth="0.9" strokeOpacity="0.28" fill="none" />
     </svg>
   ),
 

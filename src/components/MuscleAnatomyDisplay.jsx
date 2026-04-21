@@ -52,92 +52,239 @@ const BACK_OVERLAYS = [
   { m:'Glutes', d:'M50 60 C44 60 40 64 40 69 C43 73 46 74 50 74 C54 74 57 73 60 69 C60 64 56 60 50 60 Z' },
 ];
 
-// Clean legs SVG — exactly 2 legs, proper anatomy
+// High-fidelity 3D muscular lower-body model
 function LegsSVG({ activeMuscles = [] }) {
   const active = new Set(activeMuscles);
-  const C = '#A020F0';
-  const DIM = '#1e1830';
-  const qc = active.has('Quadriceps') ? C : DIM;
-  const hc = active.has('Hamstrings') ? C : DIM;
-  const gc = active.has('Glutes') ? C : DIM;
-  const cc = active.has('Calves') ? C : DIM;
-  const glow = active.size > 0;
+  const PURPLE  = '#c084fc';
+  const PURPLE2 = '#7c3aed';
+  const DIM     = '#1e1830';
+  const qOn  = active.has('Quadriceps');
+  const hOn  = active.has('Hamstrings');
+  const gOn  = active.has('Glutes');
+  const cOn  = active.has('Calves');
+
+  const qFill  = qOn  ? PURPLE  : DIM;
+  const q2Fill = qOn  ? PURPLE2 : DIM;
+  const hFill  = hOn  ? PURPLE  : DIM;
+  const gFill  = gOn  ? PURPLE  : DIM;
+  const cFill  = cOn  ? PURPLE  : DIM;
+  const c2Fill = cOn  ? PURPLE2 : DIM;
+
+  const qOp  = qOn  ? 0.82 : 0.06;
+  const q2Op = qOn  ? 0.55 : 0.04;
+  const hOp  = hOn  ? 0.60 : 0.04;
+  const gOp  = gOn  ? 0.80 : 0.05;
+  const cOp  = cOn  ? 0.75 : 0.05;
+  const c2Op = cOn  ? 0.50 : 0.03;
 
   return (
-    <svg viewBox="0 0 220 380" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+    <svg viewBox="0 0 200 340" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
       <defs>
-        <radialGradient id="legsGradBg" cx="50%" cy="20%" r="80%">
-          <stop offset="0%" stopColor="#12091e"/><stop offset="100%" stopColor="#04030a"/>
+        <radialGradient id="lg-bg" cx="50%" cy="20%" r="80%">
+          <stop offset="0%" stopColor="#18102e"/>
+          <stop offset="100%" stopColor="#06040e"/>
         </radialGradient>
-        <filter id="legsGlow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="5" result="b"/>
+        {/* Quad gradients */}
+        <radialGradient id="lg-ql" cx="38%" cy="42%" r="60%">
+          <stop offset="0%" stopColor="#c084fc" stopOpacity="1"/>
+          <stop offset="55%" stopColor="#7c3aed" stopOpacity="0.7"/>
+          <stop offset="100%" stopColor="#4c1d95" stopOpacity="0.1"/>
+        </radialGradient>
+        <radialGradient id="lg-qr" cx="62%" cy="42%" r="60%">
+          <stop offset="0%" stopColor="#c084fc" stopOpacity="1"/>
+          <stop offset="55%" stopColor="#7c3aed" stopOpacity="0.7"/>
+          <stop offset="100%" stopColor="#4c1d95" stopOpacity="0.1"/>
+        </radialGradient>
+        {/* Calf gradients */}
+        <radialGradient id="lg-cl" cx="38%" cy="35%" r="65%">
+          <stop offset="0%" stopColor="#a855f7" stopOpacity="0.9"/>
+          <stop offset="65%" stopColor="#6d28d9" stopOpacity="0.5"/>
+          <stop offset="100%" stopColor="#3b0764" stopOpacity="0.05"/>
+        </radialGradient>
+        <radialGradient id="lg-cr" cx="62%" cy="35%" r="65%">
+          <stop offset="0%" stopColor="#a855f7" stopOpacity="0.9"/>
+          <stop offset="65%" stopColor="#6d28d9" stopOpacity="0.5"/>
+          <stop offset="100%" stopColor="#3b0764" stopOpacity="0.05"/>
+        </radialGradient>
+        {/* Glute gradient */}
+        <radialGradient id="lg-gl" cx="30%" cy="55%" r="70%">
+          <stop offset="0%" stopColor="#c084fc" stopOpacity="0.95"/>
+          <stop offset="60%" stopColor="#7c3aed" stopOpacity="0.55"/>
+          <stop offset="100%" stopColor="#4c1d95" stopOpacity="0.05"/>
+        </radialGradient>
+        <radialGradient id="lg-gr" cx="70%" cy="55%" r="70%">
+          <stop offset="0%" stopColor="#c084fc" stopOpacity="0.95"/>
+          <stop offset="60%" stopColor="#7c3aed" stopOpacity="0.55"/>
+          <stop offset="100%" stopColor="#4c1d95" stopOpacity="0.05"/>
+        </radialGradient>
+        {/* Hamstring gradient */}
+        <radialGradient id="lg-hl" cx="35%" cy="50%" r="60%">
+          <stop offset="0%" stopColor="#c084fc" stopOpacity="0.85"/>
+          <stop offset="65%" stopColor="#6d28d9" stopOpacity="0.45"/>
+          <stop offset="100%" stopColor="#3b0764" stopOpacity="0.05"/>
+        </radialGradient>
+        <radialGradient id="lg-hr" cx="65%" cy="50%" r="60%">
+          <stop offset="0%" stopColor="#c084fc" stopOpacity="0.85"/>
+          <stop offset="65%" stopColor="#6d28d9" stopOpacity="0.45"/>
+          <stop offset="100%" stopColor="#3b0764" stopOpacity="0.05"/>
+        </radialGradient>
+        <filter id="lg-glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="4" result="b"/>
           <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
-        <filter id="legsSoftGlow" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="3" result="b"/>
+        <filter id="lg-soft" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="2.5" result="b"/>
           <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
       </defs>
 
-      <rect width="220" height="380" fill="url(#legsGradBg)"/>
-      {/* Subtle grid */}
-      <g opacity="0.08" stroke="rgba(160,32,240,0.4)" strokeWidth="0.5">
-        {[0,28,56,84,112,140,168,196,224].map(x=><line key={x} x1={x} y1="0" x2={x} y2="380"/>)}
-        {[0,28,56,84,112,140,168,196,224,252,280,308,336,364].map(y=><line key={y} x1="0" y1={y} x2="220" y2={y}/>)}
+      {/* Background */}
+      <rect width="200" height="340" fill="url(#lg-bg)"/>
+
+      {/* ── Grid ── */}
+      <g opacity="0.06" stroke="rgba(160,32,240,0.5)" strokeWidth="0.4">
+        {[0,25,50,75,100,125,150,175,200].map(x=><line key={x} x1={x} y1="0" x2={x} y2="340"/>)}
+        {[0,25,50,75,100,125,150,175,200,225,250,275,300,325].map(y=><line key={y} x1="0" y1={y} x2="200" y2={y}/>)}
       </g>
 
-      {/* Hips / pelvis */}
-      <ellipse cx="110" cy="46" rx="72" ry="30" fill="#1a1428" stroke="rgba(180,140,220,0.25)" strokeWidth="1"/>
-      {/* Glutes highlight on pelvis back */}
-      {(active.has('Glutes') || glow) && <ellipse cx="110" cy="52" rx="62" ry="22" fill={gc} opacity={active.has('Glutes')?0.55:0.05} filter="url(#legsSoftGlow)" style={{mixBlendMode:'screen'}}/>}
+      {/* ══ PELVIS / HIP ══ */}
+      <ellipse cx="100" cy="44" rx="58" ry="24" fill="#1a1230" stroke="rgba(180,140,220,0.3)" strokeWidth="1"/>
+      {/* Hip crease lines */}
+      <path d="M55 38 Q78 30 100 28 Q122 30 145 38" stroke="rgba(160,100,220,0.3)" strokeWidth="1" fill="none"/>
 
-      {/* LEFT leg */}
-      {/* Left quad body */}
-      <path d="M68 62 Q50 72 44 150 Q46 172 60 178 Q76 182 86 164 Q92 140 90 90 Q84 68 68 62 Z" fill="#1a1428" stroke="rgba(160,130,210,0.3)" strokeWidth="1.2"/>
-      {/* Left quad glow */}
-      <path d="M68 62 Q50 72 44 150 Q46 172 60 178 Q76 182 86 164 Q92 140 90 90 Q84 68 68 62 Z" fill={qc} opacity={active.has('Quadriceps')?0.62:0.04} filter="url(#legsGlow)" style={{mixBlendMode:'screen'}}/>
-      {/* Left hamstring (side stripe) */}
-      <path d="M48 72 Q40 80 40 150 Q44 168 58 172" stroke={hc} strokeWidth="9" fill="none" strokeLinecap="round" opacity={active.has('Hamstrings')?0.55:0.04} filter="url(#legsSoftGlow)" style={{mixBlendMode:'screen'}}/>
-      {/* Left knee */}
-      <ellipse cx="66" cy="185" rx="22" ry="13" fill="#150e22" stroke="rgba(140,110,190,0.3)" strokeWidth="1"/>
-      {/* Left calf */}
-      <path d="M52 197 Q46 228 52 275 Q58 292 66 294 Q74 293 78 275 Q84 248 82 197 Z" fill="#150e22" stroke="rgba(120,90,170,0.2)" strokeWidth="1"/>
-      <path d="M52 197 Q46 228 52 275 Q58 292 66 294 Q74 293 78 275 Q84 248 82 197 Z" fill={cc} opacity={active.has('Calves')?0.55:0.04} filter="url(#legsSoftGlow)" style={{mixBlendMode:'screen'}}/>
-      {/* Left quad fiber lines */}
-      {['M58 80 Q62 118 60 158','M70 70 Q72 112 70 155','M82 72 Q82 110 80 152'].map((d,i)=>(
-        <path key={i} d={d} stroke="rgba(200,170,255,0.2)" strokeWidth="0.9" fill="none" strokeLinecap="round"/>
+      {/* ══ GLUTES ══ */}
+      {/* Left glute */}
+      <path d="M42 34 Q68 22 100 26 Q100 60 76 70 Q52 72 40 56 Z"
+        fill="#180e2a" stroke="rgba(130,80,200,0.2)" strokeWidth="1"/>
+      <path d="M42 34 Q68 22 100 26 Q100 60 76 70 Q52 72 40 56 Z"
+        fill={gOn ? "url(#lg-gl)" : "#c084fc"} opacity={gOp}
+        filter="url(#lg-glow)" style={{mixBlendMode:'screen'}}/>
+      {/* Right glute */}
+      <path d="M158 34 Q132 22 100 26 Q100 60 124 70 Q148 72 160 56 Z"
+        fill="#180e2a" stroke="rgba(130,80,200,0.2)" strokeWidth="1"/>
+      <path d="M158 34 Q132 22 100 26 Q100 60 124 70 Q148 72 160 56 Z"
+        fill={gOn ? "url(#lg-gr)" : "#c084fc"} opacity={gOp}
+        filter="url(#lg-glow)" style={{mixBlendMode:'screen'}}/>
+      {/* Glute crease */}
+      <line x1="100" y1="26" x2="100" y2="70" stroke="rgba(160,100,220,0.22)" strokeWidth="1"/>
+      {/* Glute highlight sheens */}
+      {gOn && <>
+        <ellipse cx="72" cy="44" rx="16" ry="9" fill="#e9d5ff" fillOpacity="0.22" filter="url(#lg-soft)"/>
+        <ellipse cx="128" cy="44" rx="16" ry="9" fill="#e9d5ff" fillOpacity="0.22" filter="url(#lg-soft)"/>
+      </>}
+
+      {/* ══ LEFT LEG ══ */}
+      {/* --- Outer quad sweep (vastus lateralis) --- */}
+      <path d="M52 58 Q38 68 36 114 Q38 138 50 150 Q60 144 62 128 Q64 100 58 68 Z"
+        fill="#1a1230" stroke="rgba(140,100,200,0.25)" strokeWidth="1"/>
+      <path d="M52 58 Q38 68 36 114 Q38 138 50 150 Q60 144 62 128 Q64 100 58 68 Z"
+        fill={qOn ? "url(#lg-ql)" : "#c084fc"} opacity={qOp}
+        filter="url(#lg-glow)" style={{mixBlendMode:'screen'}}/>
+      {/* --- Rectus femoris (centre quad) --- */}
+      <path d="M58 60 Q72 56 82 62 Q84 90 74 120 Q66 128 58 120 Q54 96 58 60 Z"
+        fill={q2Fill} opacity={q2Op} style={{mixBlendMode:'screen'}}/>
+      {/* --- VMO teardrop --- */}
+      <ellipse cx="60" cy="146" rx="9" ry="13"
+        fill={qOn ? "#c084fc" : "#3b0764"} opacity={qOn ? 0.65 : 0.05}
+        filter="url(#lg-soft)" style={{mixBlendMode:'screen'}}/>
+      {/* Quad fibre lines */}
+      {qOn && ['M50 74 Q54 106 52 140','M62 66 Q64 100 62 136','M74 68 Q74 100 72 132'].map((d,i)=>(
+        <path key={i} d={d} stroke="#e9d5ff" strokeWidth="0.8" strokeOpacity="0.35" fill="none" strokeLinecap="round"/>
       ))}
+      {/* --- Hamstring back stripe (inner side) --- */}
+      <path d="M42 68 Q34 78 34 138 Q38 152 50 156"
+        stroke={hOn ? "url(#lg-hl)" : "#3b0764"} strokeWidth="11" fill="none"
+        strokeLinecap="round" opacity={hOp}
+        filter="url(#lg-glow)" style={{mixBlendMode:'screen'}}/>
+      {hOn && <path d="M42 68 Q34 78 34 138 Q38 152 50 156"
+        stroke="#e9d5ff" strokeWidth="1" fill="none" strokeOpacity="0.3" strokeLinecap="round"/>}
+      {/* Kneecap */}
+      <ellipse cx="58" cy="162" rx="18" ry="12" fill="#130c20" stroke="rgba(120,80,180,0.4)" strokeWidth="1.2"/>
+      <ellipse cx="58" cy="160" rx="10" ry="7" fill="#1e1438" stroke="rgba(140,100,200,0.5)" strokeWidth="0.7"/>
+      {/* --- Calf (gastrocnemius lateral) --- */}
+      <path d="M44 173 Q38 200 44 242 Q50 260 58 262 Q66 261 70 242 Q76 218 74 173 Z"
+        fill="#130c20" stroke="rgba(110,70,160,0.2)" strokeWidth="1"/>
+      <path d="M44 173 Q38 200 44 242 Q50 260 58 262 Q66 261 70 242 Q76 218 74 173 Z"
+        fill={cOn ? "url(#lg-cl)" : "#a855f7"} opacity={cOp}
+        filter="url(#lg-soft)" style={{mixBlendMode:'screen'}}/>
+      {/* Calf medial head */}
+      <path d="M58 173 Q70 170 74 173 Q74 208 70 240 Q64 252 58 240 Z"
+        fill={c2Fill} opacity={c2Op} style={{mixBlendMode:'screen'}}/>
+      {/* Calf diamond highlight */}
+      {cOn && <ellipse cx="57" cy="210" rx="8" ry="18" fill="#e9d5ff" fillOpacity="0.15" filter="url(#lg-soft)"/>}
+      {/* Ankle */}
+      <ellipse cx="58" cy="268" rx="12" ry="7" fill="#0e0819" stroke="rgba(100,70,140,0.25)" strokeWidth="1"/>
 
-      {/* RIGHT leg */}
-      {/* Right quad body */}
-      <path d="M152 62 Q170 72 176 150 Q174 172 160 178 Q144 182 134 164 Q128 140 130 90 Q136 68 152 62 Z" fill="#1a1428" stroke="rgba(160,130,210,0.3)" strokeWidth="1.2"/>
-      {/* Right quad glow */}
-      <path d="M152 62 Q170 72 176 150 Q174 172 160 178 Q144 182 134 164 Q128 140 130 90 Q136 68 152 62 Z" fill={qc} opacity={active.has('Quadriceps')?0.62:0.04} filter="url(#legsGlow)" style={{mixBlendMode:'screen'}}/>
-      {/* Right hamstring (side stripe) */}
-      <path d="M172 72 Q180 80 180 150 Q176 168 162 172" stroke={hc} strokeWidth="9" fill="none" strokeLinecap="round" opacity={active.has('Hamstrings')?0.55:0.04} filter="url(#legsSoftGlow)" style={{mixBlendMode:'screen'}}/>
-      {/* Right knee */}
-      <ellipse cx="154" cy="185" rx="22" ry="13" fill="#150e22" stroke="rgba(140,110,190,0.3)" strokeWidth="1"/>
-      {/* Right calf */}
-      <path d="M138 197 Q132 228 138 275 Q144 292 154 294 Q162 293 166 275 Q170 248 168 197 Z" fill="#150e22" stroke="rgba(120,90,170,0.2)" strokeWidth="1"/>
-      <path d="M138 197 Q132 228 138 275 Q144 292 154 294 Q162 293 166 275 Q170 248 168 197 Z" fill={cc} opacity={active.has('Calves')?0.55:0.04} filter="url(#legsSoftGlow)" style={{mixBlendMode:'screen'}}/>
-      {/* Right quad fiber lines */}
-      {['M162 80 Q158 118 160 158','M150 70 Q148 112 150 155','M138 72 Q138 110 140 152'].map((d,i)=>(
-        <path key={i} d={d} stroke="rgba(200,170,255,0.2)" strokeWidth="0.9" fill="none" strokeLinecap="round"/>
+      {/* ══ RIGHT LEG ══ */}
+      {/* --- Outer quad sweep --- */}
+      <path d="M148 58 Q162 68 164 114 Q162 138 150 150 Q140 144 138 128 Q136 100 142 68 Z"
+        fill="#1a1230" stroke="rgba(140,100,200,0.25)" strokeWidth="1"/>
+      <path d="M148 58 Q162 68 164 114 Q162 138 150 150 Q140 144 138 128 Q136 100 142 68 Z"
+        fill={qOn ? "url(#lg-qr)" : "#c084fc"} opacity={qOp}
+        filter="url(#lg-glow)" style={{mixBlendMode:'screen'}}/>
+      {/* --- Rectus femoris --- */}
+      <path d="M142 60 Q128 56 118 62 Q116 90 126 120 Q134 128 142 120 Q146 96 142 60 Z"
+        fill={q2Fill} opacity={q2Op} style={{mixBlendMode:'screen'}}/>
+      {/* --- VMO teardrop --- */}
+      <ellipse cx="140" cy="146" rx="9" ry="13"
+        fill={qOn ? "#c084fc" : "#3b0764"} opacity={qOn ? 0.65 : 0.05}
+        filter="url(#lg-soft)" style={{mixBlendMode:'screen'}}/>
+      {/* Quad fibre lines */}
+      {qOn && ['M150 74 Q146 106 148 140','M138 66 Q136 100 138 136','M126 68 Q126 100 128 132'].map((d,i)=>(
+        <path key={i} d={d} stroke="#e9d5ff" strokeWidth="0.8" strokeOpacity="0.35" fill="none" strokeLinecap="round"/>
       ))}
+      {/* --- Hamstring back stripe --- */}
+      <path d="M158 68 Q166 78 166 138 Q162 152 150 156"
+        stroke={hOn ? "url(#lg-hr)" : "#3b0764"} strokeWidth="11" fill="none"
+        strokeLinecap="round" opacity={hOp}
+        filter="url(#lg-glow)" style={{mixBlendMode:'screen'}}/>
+      {hOn && <path d="M158 68 Q166 78 166 138 Q162 152 150 156"
+        stroke="#e9d5ff" strokeWidth="1" fill="none" strokeOpacity="0.3" strokeLinecap="round"/>}
+      {/* Kneecap */}
+      <ellipse cx="142" cy="162" rx="18" ry="12" fill="#130c20" stroke="rgba(120,80,180,0.4)" strokeWidth="1.2"/>
+      <ellipse cx="142" cy="160" rx="10" ry="7" fill="#1e1438" stroke="rgba(140,100,200,0.5)" strokeWidth="0.7"/>
+      {/* --- Calf --- */}
+      <path d="M126 173 Q120 200 126 242 Q132 260 142 262 Q150 261 154 242 Q160 218 158 173 Z"
+        fill="#130c20" stroke="rgba(110,70,160,0.2)" strokeWidth="1"/>
+      <path d="M126 173 Q120 200 126 242 Q132 260 142 262 Q150 261 154 242 Q160 218 158 173 Z"
+        fill={cOn ? "url(#lg-cr)" : "#a855f7"} opacity={cOp}
+        filter="url(#lg-soft)" style={{mixBlendMode:'screen'}}/>
+      {/* Calf medial head */}
+      <path d="M142 173 Q130 170 126 173 Q126 208 130 240 Q136 252 142 240 Z"
+        fill={c2Fill} opacity={c2Op} style={{mixBlendMode:'screen'}}/>
+      {/* Calf diamond highlight */}
+      {cOn && <ellipse cx="143" cy="210" rx="8" ry="18" fill="#e9d5ff" fillOpacity="0.15" filter="url(#lg-soft)"/>}
+      {/* Ankle */}
+      <ellipse cx="142" cy="268" rx="12" ry="7" fill="#0e0819" stroke="rgba(100,70,140,0.25)" strokeWidth="1"/>
 
-      {/* Ankles */}
-      <ellipse cx="66" cy="300" rx="14" ry="8" fill="#100a1a" stroke="rgba(120,90,160,0.2)" strokeWidth="1"/>
-      <ellipse cx="154" cy="300" rx="14" ry="8" fill="#100a1a" stroke="rgba(120,90,160,0.2)" strokeWidth="1"/>
+      {/* ══ PEAK GLOW HOTSPOTS (when active) ══ */}
+      {qOn && <>
+        <ellipse cx="46" cy="96" rx="10" ry="18" fill="#a855f7" fillOpacity="0.28" filter="url(#lg-soft)"/>
+        <ellipse cx="154" cy="96" rx="10" ry="18" fill="#a855f7" fillOpacity="0.28" filter="url(#lg-soft)"/>
+      </>}
+      {cOn && <>
+        <ellipse cx="58" cy="218" rx="8" ry="15" fill="#a855f7" fillOpacity="0.22" filter="url(#lg-soft)"/>
+        <ellipse cx="142" cy="218" rx="8" ry="15" fill="#a855f7" fillOpacity="0.22" filter="url(#lg-soft)"/>
+      </>}
 
-      {/* HUD */}
-      <text x="14" y="24" fill="rgba(190,140,255,0.75)" fontSize="11" fontFamily="monospace">98%</text>
-      <line x1="14" y1="28" x2="54" y2="28" stroke="rgba(160,80,255,0.4)" strokeWidth="1.2"/>
-      <line x1="14" y1="32" x2="42" y2="32" stroke="rgba(160,80,255,0.25)" strokeWidth="1"/>
-      <text x="134" y="24" fill="rgba(160,100,255,0.5)" fontSize="7.5" fontFamily="monospace" letterSpacing="1.2">MUSCLE LIVE MAP</text>
-      <text x="110" y="368" textAnchor="middle" fill="rgba(140,110,190,0.4)" fontSize="9" fontFamily="monospace" letterSpacing="2">LEGS</text>
+      {/* ══ HIGHLIGHT SHEEN STREAKS ══ */}
+      <path d="M40 72 Q52 66 56 86" stroke="#e9d5ff" strokeWidth="1.2" strokeOpacity="0.4" fill="none" strokeLinecap="round"/>
+      <path d="M160 72 Q148 66 144 86" stroke="#e9d5ff" strokeWidth="1.2" strokeOpacity="0.4" fill="none" strokeLinecap="round"/>
+
+      {/* ══ HUD ══ */}
+      <text x="10" y="20" fill="rgba(190,140,255,0.7)" fontSize="9" fontFamily="monospace">98%</text>
+      <line x1="10" y1="23" x2="42" y2="23" stroke="rgba(160,80,255,0.35)" strokeWidth="1"/>
+      <text x="110" y="330" textAnchor="middle" fill="rgba(140,110,190,0.35)" fontSize="8" fontFamily="monospace" letterSpacing="2">LOWER BODY</text>
+
+      {/* Corner brackets */}
+      <path d="M4 14 L4 4 L14 4" stroke="rgba(180,100,255,0.6)" strokeWidth="0.7" fill="none"/>
+      <path d="M186 4 L196 4 L196 14" stroke="rgba(180,100,255,0.6)" strokeWidth="0.7" fill="none"/>
+      <path d="M4 326 L4 336 L14 336" stroke="rgba(180,100,255,0.4)" strokeWidth="0.7" fill="none"/>
+      <path d="M186 336 L196 336 L196 326" stroke="rgba(180,100,255,0.4)" strokeWidth="0.7" fill="none"/>
     </svg>
   );
 }
+
 
 export default function MuscleAnatomyDisplay({ muscleGroup, anatomyStates = {} }) {
   const [scale, setScale] = useState(1);
@@ -156,7 +303,7 @@ export default function MuscleAnatomyDisplay({ muscleGroup, anatomyStates = {} }
     return fromActive || muscleGroup || 'Chest';
   })();
 
-  const isLegs = group === 'Legs';
+  const isLegs = group === 'Legs' || muscleGroup === 'Glutes' || activeMuscles.some(m => ['Glutes','Quadriceps','Hamstrings','Calves'].includes(m));
   // Use back image if any back muscle is targeted
   const imgKey = hasBackMuscle ? 'Back' : group;
   const imgSrc = IMGS[imgKey];
